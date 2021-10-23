@@ -44,17 +44,16 @@
             text-align: center;
         }
 
+        .hidden {
+            display: none;
+        }
+
         #groups-menu {
             text-align: center;
         }
 
         #groups-menu button {
             margin-bottom: .5em;
-        }
-
-        #form,
-        #top-nav {
-            display: none;
         }
 
         #top-nav {
@@ -79,7 +78,6 @@
 
         #username-group,
         #telegram {
-            display: none;
             margin: 1.5em 0 2em;
         }
 
@@ -107,10 +105,6 @@
             margin-right: .5em;
         }
 
-        #submit-group {
-            display: none;
-        }
-
         #submit {
             background-color: #7fbdf1;
             color: #202022;
@@ -136,26 +130,26 @@
             <button>Primal Diet</button> <button>Primal Life</button> <button>Optimal Living</button> <button>Primal situation room</button>
         </div>
 
-        <div id="top-nav">
+        <div id="top-nav" class="hidden">
             <a id="back" href="">&laquo; Back</a> · <span id="group"></span>
         </div>
         
-        <div id="form">
+        <div id="form" class="hidden">
             <div id="activity">
                 <button>Coping</button> <button>Larping</button> <button>Bootlicking</button>
                 <input id="custom-activity" type="text" placeholder="Custom...">
             </div>
-            <div id="username-group">
+            <div id="username-group" class="hidden">
                 <label for="username">Username:</label>
                 <input id="username" type="text">
             </div>
-            <div id="submit-group">
+            <div id="submit-group" class="hidden">
                 <button id="submit">Generate image</button>
                 <button id="download">
                     <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15"><path d="M7.5 10.5l-3.25-3m3.25 3l3-3m-3 3V1m6 6v6.5h-12V7" stroke="currentColor"></path></svg> Download image
                 </button>
             </div>
-            <canvas id="telegram"></canvas>
+            <canvas id="telegram" class="hidden"></canvas>
         </div>
           
     </div>
@@ -178,8 +172,7 @@
         const download = document.getElementById("download");
         const telegram = document.getElementById("telegram");
         const context = telegram.getContext("2d");
-        telegram.width = 810;
-        telegram.height = 126;
+        resetCanvas();
 
         for (let i = 0; i < groups.length; i++) {
             groups[i].addEventListener("click", selectGroup);
@@ -195,22 +188,30 @@
         submit.addEventListener("click", generateImage);
         download.addEventListener("click", downloadImage);
 
+        function resetCanvas() {
+            telegram.width = 810;
+            telegram.height = 126;
+        }
+
+        function changeVisibility(event, ...elements) {
+            const fn = event === "show" ? "remove" : "add";
+            elements.forEach(function (element) {
+                element.classList[fn]("hidden")
+            });
+        }
+
         function selectGroup() {
             activeGroup = this;
-            groupsMenu.style.display = "none";
-            form.style.display = "block";
             group.innerText = this.innerText;
-            topNav.style.display = "block";
+            changeVisibility("hide", groupsMenu);
+            changeVisibility("show", form, topNav)
         }
 
         function goBack(e) {
             e.preventDefault();
-            topNav.style.display = "none";
-            form.style.display = "none";
-            usernameGroup.style.display = "none";
-            submitGroup.style.display = "none";
-            telegram.style.display = "none";
-            groupsMenu.style.display = "block";
+            changeVisibility("hide", topNav, form, usernameGroup, submitGroup, telegram);
+            changeVisibility("show", groupsMenu);
+            resetCanvas();
             activeInput = "";
             customActivity.value = "";
             activeButton && activeButton.classList.remove("active");
@@ -223,7 +224,12 @@
             activeInput = this.value.trim();
             activeButton && activeButton.classList.remove("active");
             activeButton = null;
-            usernameGroup.style.display = activeInput !== "" ? "block" : "none";
+
+            if (activeInput === "") {
+                changeVisibility("hide", usernameGroup, submitGroup, telegram);
+            } else {
+                changeVisibility("show", usernameGroup);
+            }
         }
 
         function selectActivity() {
@@ -239,16 +245,12 @@
             activeButton.classList.toggle("active");
             customActivity.value = "";
             activeInput = "";
-            showUsername();
-        }
-
-        function showUsername() {
-            usernameGroup.style.display = "block";
+            changeVisibility("show", usernameGroup);
             username.focus();
         }
 
         function toggleSubmit() {
-            submitGroup.style.display = this.value === "" ? "none" : "block";
+            changeVisibility(this.value === "" ? "hide" : "show", submitGroup);
         }
 
         function generateImage() {
@@ -263,7 +265,7 @@
                     context.fillStyle = "#7fbdf1";
                     context.fillText(`${name} is ${activity}`, 316, 99);
                 });
-                telegram.style.display = "block";
+                changeVisibility("show", telegram);
             }
         }
 
@@ -275,7 +277,7 @@
                 const a = document.createElement("a");
                 a.href = telegram.toDataURL("image/png");
                 a.download = `${name}-is-${activity}.png`.replace(/\s/g, "-").toLowerCase();
-                a.style.display = "none";
+                changeVisibility("hide", a);
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -285,6 +287,7 @@
         function getImage() {
             return `${activeGroup.innerText.toLowerCase().replace(/\s/g, "-")}-typing-template.jpg`;
         }
+
     </script>
 </body>
 </html>
