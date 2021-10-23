@@ -248,7 +248,7 @@
         function downloadImage() {
             if (activeButton !== null && username.value !== "") {
                 generateImage();
-                const name = username.value.trim();
+                const name = username.value.trim().replace(/\s/g, "-");
                 const activity = activeButton.innerText.toLowerCase();
                 const a = document.createElement("a");
                 a.href = telegram.toDataURL("image/png");
