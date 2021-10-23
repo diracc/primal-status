@@ -69,6 +69,7 @@
             border-radius: .2em;
             color: #fff;
             cursor: pointer;
+            margin-bottom: .5em;
             padding: .5em 1em;
         }
 
@@ -79,10 +80,11 @@
         #username-group,
         #telegram {
             display: none;
-            margin: 2em 0;
+            margin: 1.5em 0 2em;
         }
 
-        #username {
+        #username,
+        #custom-activity {
             background-color: #202022;
             border: none;
             border-radius: .2em;
@@ -92,8 +94,13 @@
             padding: .5em 1em;
         }
 
-        #username:focus {
+        #username:focus,
+        #custom-activity:focus {
             outline: 2px solid #7fbdf1;
+        }
+
+        #custom-activity {
+            color: #7fbdf1;
         }
 
         #username-group label {
@@ -136,6 +143,7 @@
         <div id="form">
             <div id="activity">
                 <button>Coping</button> <button>Larping</button> <button>Bootlicking</button>
+                <input id="custom-activity" type="text" placeholder="Custom...">
             </div>
             <div id="username-group">
                 <label for="username">Username:</label>
@@ -160,7 +168,9 @@
         const group = document.getElementById("group");
         const form = document.getElementById("form");
         let activeButton = null;
+        let activeInput = "";
         const buttons = document.getElementById("activity").getElementsByTagName("button");
+        const customActivity = document.getElementById("custom-activity");
         const usernameGroup = document.getElementById("username-group");
         const username = document.getElementById("username");
         const submitGroup = document.getElementById("submit-group");
@@ -180,6 +190,7 @@
         }
 
         back.addEventListener("click", goBack);
+        customActivity.addEventListener("input", handleCustomInput);
         username.addEventListener("input", toggleSubmit);
         submit.addEventListener("click", generateImage);
         download.addEventListener("click", downloadImage);
@@ -200,10 +211,19 @@
             submitGroup.style.display = "none";
             telegram.style.display = "none";
             groupsMenu.style.display = "block";
+            activeInput = "";
+            customActivity.value = "";
             activeButton && activeButton.classList.remove("active");
             activeGroup = null;
             activeButton = null;
             username.value = "";
+        }
+
+        function handleCustomInput() {
+            activeInput = this.value.trim();
+            activeButton && activeButton.classList.remove("active");
+            activeButton = null;
+            usernameGroup.style.display = activeInput !== "" ? "block" : "none";
         }
 
         function selectActivity() {
@@ -217,6 +237,8 @@
 
             activeButton = this;
             activeButton.classList.toggle("active");
+            customActivity.value = "";
+            activeInput = "";
             showUsername();
         }
 
@@ -230,9 +252,9 @@
         }
 
         function generateImage() {
-            if (activeButton !== null && username.value !== "") {
+            if ((activeButton !== null || activeInput !== "") && username.value !== "") {
                 const name = username.value.trim();
-                const activity = activeButton.innerText.toLowerCase();
+                const activity = (activeInput || activeButton.innerText).toLowerCase();
                 const background = new Image();
                 background.src = getImage();
                 background.addEventListener("load", function () {
@@ -246,13 +268,13 @@
         }
 
         function downloadImage() {
-            if (activeButton !== null && username.value !== "") {
+            if ((activeButton !== null || activeInput !== "") && username.value !== "") {
                 generateImage();
-                const name = username.value.trim().replace(/\s/g, "-");
-                const activity = activeButton.innerText.toLowerCase();
+                const name = username.value.trim();
+                const activity = (activeInput || activeButton.innerText).toLowerCase();
                 const a = document.createElement("a");
                 a.href = telegram.toDataURL("image/png");
-                a.download = `${name}-is-${activity}.png`.toLowerCase();
+                a.download = `${name}-is-${activity}.png`.replace(/\s/g, "-").toLowerCase();
                 a.style.display = "none";
                 document.body.appendChild(a);
                 a.click();
