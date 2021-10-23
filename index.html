@@ -16,6 +16,15 @@
             font: 1rem Arial, Helvetica, sans-serif;
         }
 
+        a {
+            color: #7fbdf1;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
         .container {
             margin: 1em auto;
             max-width: 50.625em;
@@ -33,6 +42,17 @@
             font-weight: normal;
             margin: 0 0 1.5em;
             text-align: center;
+        }
+
+        #form,
+        #top-nav {
+            display: none;
+        }
+
+        #top-nav {
+            border-bottom: 1px solid #202022;
+            margin-bottom: 1.5em;
+            padding-bottom: .5em;
         }
 
         button {
@@ -96,23 +116,41 @@
     <div class="container">
         <svg id="logo" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
         <h1>Primal status</h1>
-        <div id="activity">
-            <button>Coping</button> <button>Larping</button> <button>Bootlicking</button>
+        
+        <div id="groups-menu">
+            <button>Primal Diet</button> <button>Primal Life</button>
         </div>
-        <div id="username-group">
-            <label for="username">Username:</label>
-            <input id="username" type="text">
+
+        <div id="top-nav">
+            <a id="back" href="">&laquo; Back</a> · <span id="group"></span>
         </div>
-        <div id="submit-group">
-            <button id="submit">Generate image</button>
-            <button id="download">
-                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15"><path d="M7.5 10.5l-3.25-3m3.25 3l3-3m-3 3V1m6 6v6.5h-12V7" stroke="currentColor"></path></svg> Download image
-            </button>
+        
+        <div id="form">
+            <div id="activity">
+                <button>Coping</button> <button>Larping</button> <button>Bootlicking</button>
+            </div>
+            <div id="username-group">
+                <label for="username">Username:</label>
+                <input id="username" type="text">
+            </div>
+            <div id="submit-group">
+                <button id="submit">Generate image</button>
+                <button id="download">
+                    <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15"><path d="M7.5 10.5l-3.25-3m3.25 3l3-3m-3 3V1m6 6v6.5h-12V7" stroke="currentColor"></path></svg> Download image
+                </button>
+            </div>
+            <canvas id="telegram"></canvas>
         </div>
-        <canvas id="telegram"></canvas>
           
     </div>
     <script>
+        let activeGroup = null;
+        const groupsMenu = document.getElementById("groups-menu");
+        const groups = groupsMenu.getElementsByTagName("button");
+        const topNav = document.getElementById("top-nav");
+        const back = document.getElementById("back");
+        const group = document.getElementById("group");
+        const form = document.getElementById("form");
         let activeButton = null;
         const buttons = document.getElementById("activity").getElementsByTagName("button");
         const usernameGroup = document.getElementById("username-group");
@@ -125,15 +163,42 @@
         telegram.width = 810;
         telegram.height = 126;
 
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].addEventListener("click", handleClick);
+        for (let i = 0; i < groups.length; i++) {
+            groups[i].addEventListener("click", selectGroup);
         }
 
+        for (i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", selectActivity);
+        }
+
+        back.addEventListener("click", goBack);
         username.addEventListener("input", toggleSubmit);
         submit.addEventListener("click", generateImage);
-        download.addEventListener("click", downloadImage)
+        download.addEventListener("click", downloadImage);
 
-        function handleClick() {
+        function selectGroup() {
+            activeGroup = this;
+            groupsMenu.style.display = "none";
+            form.style.display = "block";
+            group.innerText = this.innerText;
+            topNav.style.display = "block";
+        }
+
+        function goBack(e) {
+            e.preventDefault();
+            topNav.style.display = "none";
+            form.style.display = "none";
+            usernameGroup.style.display = "none";
+            submitGroup.style.display = "none";
+            telegram.style.display = "none";
+            groupsMenu.style.display = "block";
+            activeButton && activeButton.classList.remove("active");
+            activeGroup = null;
+            activeButton = null;
+            username.value = "";
+        }
+
+        function selectActivity() {
             if (activeButton === this) {
                 return true;
             }
@@ -161,7 +226,7 @@
                 const name = username.value.trim();
                 const activity = activeButton.innerText.toLowerCase();
                 const background = new Image();
-                background.src = "primal-life-typing-template.jpg";
+                background.src = getImage();
                 background.addEventListener("load", function () {
                     context.drawImage(background, 0, 0);
                     context.font = "31px sans-serif";
@@ -185,6 +250,10 @@
                 a.click();
                 a.remove();
             }
+        }
+
+        function getImage() {
+            return `${activeGroup.innerText.toLowerCase().replace(/\s/, "-")}-typing-template.jpg`;
         }
     </script>
 </body>
