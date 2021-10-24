@@ -227,9 +227,11 @@
 
             if (activeInput === "") {
                 resetCanvas();
-                changeVisibility("hide", usernameGroup, submitGroup, telegram);
+                changeVisibility("hide", submitGroup, telegram);
+                username.value === "" && changeVisibility("hide", usernameGroup);
             } else {
                 changeVisibility("show", usernameGroup);
+                username.value !== "" && changeVisibility("show", submitGroup);
             }
         }
 
