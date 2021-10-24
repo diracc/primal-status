@@ -226,6 +226,7 @@
             activeButton = null;
 
             if (activeInput === "") {
+                resetCanvas();
                 changeVisibility("hide", usernameGroup, submitGroup, telegram);
             } else {
                 changeVisibility("show", usernameGroup);
@@ -245,12 +246,19 @@
             activeButton.classList.toggle("active");
             customActivity.value = "";
             activeInput = "";
+            toggleSubmit.bind(username);
             changeVisibility("show", usernameGroup);
             username.focus();
         }
 
         function toggleSubmit() {
-            changeVisibility(this.value === "" ? "hide" : "show", submitGroup);
+            if (this.value !== "") {
+                changeVisibility("show", submitGroup);
+                return true;
+            }
+
+            resetCanvas();
+            changeVisibility("hide", submitGroup, telegram);
         }
 
         function generateImage() {
@@ -287,7 +295,6 @@
         function getImage() {
             return `${activeGroup.innerText.toLowerCase().replace(/\s/g, "-")}-typing-template.jpg`;
         }
-
     </script>
 </body>
 </html>
