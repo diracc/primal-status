@@ -248,7 +248,7 @@
             activeInput = "";
             toggleSubmit.bind(username)();
             changeVisibility("show", usernameGroup);
-            username.focus();
+            username.value === "" && username.focus();
         }
 
         function toggleSubmit() {
