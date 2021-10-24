@@ -246,7 +246,7 @@
             activeButton.classList.toggle("active");
             customActivity.value = "";
             activeInput = "";
-            toggleSubmit.bind(username);
+            toggleSubmit.bind(username)();
             changeVisibility("show", usernameGroup);
             username.focus();
         }
